@@ -6,7 +6,7 @@ Python client for the [Facebook Ads API](https://developers.facebook.com/docs/ad
 
 Installation
 ------------
-pip install facebook-ads-api
+Clone the repo and copy the facebookadspy file where needed.
 
 Usage
 -----
