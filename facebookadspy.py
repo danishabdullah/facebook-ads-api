@@ -106,12 +106,17 @@ class Response(object):
         else:
             raise NotImplementedError(str(type(resp)) + " is not yet supported \
                 by Response class yet")
-        self.paging = [self.paging] # hack to keep track of all the pages in paging
+        if "paging" in resp.keys():
+            self.paging = [self.paging] # hack to keep track of all the pages in paging
+        else:
+            self.paging = None
         # When we want to load everything in one go.
         if get_all:
             self.get_all()
 
     def load_all(self):
+        if not self.paging:
+            return
         while 'next' in self.paging[len(self.paging)-1].keys():
             try:
                 temp  = r.get(self.paging[len(self.paging)-1]['next']).json()
@@ -255,11 +260,10 @@ class AdsAPI(object):
     def get_adcampaign_groups(self, account_id, fields=False, batch=False):
         """Returns the fields of all ad campaign groups from the given ad account."""
         path = 'act_%s/adcampaign_groups' % account_id
+        args = {}
         if fields:
             args['fields'] = fields
-        args = {
-            'limit': self.DATA_LIMIT
-        }
+        args['limit'] = self.DATA_LIMIT
         return self.make_request(path, 'GET', args, batch=batch)
 
     # New API
