@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import codecs
 import datetime
 import hashlib
@@ -11,10 +16,12 @@ import urllib
 import urllib2
 import uuid
 
-FACEBOOK_API = 'https://graph.facebook.com'
+# <codecell>
 
+FACEBOOK_API = 'https://graph.facebook.com'
 logger = logging.getLogger(__name__)
 
+# <codecell>
 
 class MultipartFormdataEncoder(object):
     def __init__(self):
@@ -66,6 +73,7 @@ class MultipartFormdataEncoder(object):
             body.write(chunk)
         return self.content_type, body.getvalue()
 
+# <codecell>
 
 class AdsAPIError(Exception):
     """
@@ -79,6 +87,7 @@ class AdsAPIError(Exception):
         self.code = data['error']['code']
         self.type = data['error']['type']
 
+# <codecell>
 
 class AdsAPI(object):
     """A client for the Facebook Ads API."""
@@ -733,3 +742,7 @@ class AdsAPI(object):
             'tag': tag,
         }
         return self.make_request(path, 'POST', args, batch=batch)
+
+# <codecell>
+
+

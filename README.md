@@ -11,6 +11,6 @@ pip install facebook-ads-api
 Usage
 -----
 
-    import facebook
+    import facebookadspy
 
-    api = facebook.AdsAPI(access_token, app_id, app_secret)
+    api = facebookadspy.AdsAPI(access_token, app_id, app_secret)

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import facebook
+import facebookadspy
 
 USER_ID = os.environ['USER_ID']
 ACCOUNT_ID = os.environ['ACCOUNT_ID']

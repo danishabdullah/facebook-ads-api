@@ -10,6 +10,9 @@ venv
 # C extensions
 *.so
 
+# IPython
+*.ipynb
+
 # Packages
 *.egg
 *.egg-info
