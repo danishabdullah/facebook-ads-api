@@ -155,7 +155,7 @@ class AdsAPI(object):
             args['access_token'] = self.access_token
         try:
             if method == 'GET':
-                url = '%s/%s?%s' % (FACEBOOK_API, path, urllib.urlencode(args))
+                url = '%s/%s?%s' % (FACEBOOK_API, path, urllib.urlencode(args)) # this hack is needed because requests doesn't expect access_token kwarg for some reason
                 f = r.get(url).json()
             elif method == 'POST':
                 url = '%s/%s' % (FACEBOOK_API, path)
@@ -169,9 +169,7 @@ class AdsAPI(object):
                     f = urllib2.urlopen(url, urllib.urlencode(args))
             elif method == 'DELETE':
                 url = '%s/%s?%s' % (FACEBOOK_API, path, urllib.urlencode(args))
-                req = urllib2.Request(url)
-                req.get_method = lambda: 'DELETE'
-                f = urllib2.urlopen(req)
+                f = r.delete.(req).json()
             else:
                 raise
             return Response(f)
