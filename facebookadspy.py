@@ -124,7 +124,7 @@ class Response(object):
                 print '%s' % err
                 print "Check your connection mate"
                 raise AdsAPIError
-            self.data.append(temp['data'])
+            self.data += temp['data']
             self.paging.append(temp['paging'])
 
 # <codecell>
