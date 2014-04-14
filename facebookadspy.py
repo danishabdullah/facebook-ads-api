@@ -119,7 +119,6 @@ class Response(object):
                 print '%s' % err
                 print "Check your connection mate"
                 raise AdsAPIError
-            except
             self.data.append(temp['data'])
             self.paging.append(temp['paging'])
 
