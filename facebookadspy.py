@@ -169,7 +169,7 @@ class AdsAPI(object):
                     f = urllib2.urlopen(url, urllib.urlencode(args))
             elif method == 'DELETE':
                 url = '%s/%s?%s' % (FACEBOOK_API, path, urllib.urlencode(args))
-                f = r.delete.(req).json()
+                f = r.delete(req).json()
             else:
                 raise
             return Response(f)
