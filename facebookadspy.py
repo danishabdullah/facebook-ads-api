@@ -17,12 +17,29 @@ import urllib2
 import uuid
 import requests as r
 
+
 # <codecell>
 
 FACEBOOK_API = 'https://graph.facebook.com'
 logger = logging.getLogger(__name__)
 
 # <codecell>
+
+def dicts_to_namedrecords(dicts, class_name=None):
+    """ Takes list of dictionaries and converts to list of recordtype objects"""
+    from recordtype import recordtype
+    from random import randint
+    from sets import Set
+    all_keys = []
+    for dic in dicts:
+        all_keys += dic.keys()
+    unique_keys = list(Set(all_keys))
+    key_defaults = [(key, None) for key in unique_keys]
+    if not class_name:
+        class_name = 'FB_Record_Type_'
+    Record = recordtype(class_name + str(randint(1,9999999)), key_defaults)
+    data = [Record(**dic) for dic in dicts]
+    return data
 
 
 class MultipartFormdataEncoder(object):
@@ -95,37 +112,78 @@ class AdsAPIError(Exception):
 
 # <codecell>
 
-class Response(object):
+class AdsAPIResponse(object):
 
     """ A response object to encapsulate successfull requests """
     def __init__(self, resp, get_all=False):
         if type(resp) == str or type(resp) == unicode:
-            self.__dict__.update(json.loads(resp))
+            resp = json.loads(resp)
+            self.__dict__.update(resp)
         elif type(resp) == dict:
             self.__dict__.update(resp)
         else:
             raise NotImplementedError(str(type(resp)) + " is not yet supported \
                 by Response class yet")
+        originals = {}
+        for key, value in resp.iteritems():
+            originals['_'+key] = value
+        self.__dict__.update(originals)
         if "paging" in resp.keys():
             self.paging = [self.paging] # hack to keep track of all the pages in paging
+            self._paging = [self._paging]
         else:
             self.paging = None
+            self._paging = None
         # When we want to load everything in one go.
         if get_all:
             self.get_all()
 
+    def to_namedrecords(self):
+        """
+        Converts reponse data into recordtype objects which can be easily
+        accessed using dot notation. Very handy for ipython workflows.
+        It fetches all the pages before proceeding.
+        """
+        if self._paging and 'next' in self._paging[len(self._paging)-1].keys():
+            self.load_all()
+        if self.data:
+            class_name = 'FB_Record_Type_'
+            self.data = dicts_to_namedrecords(self._data, class_name)
+        if self.paging:
+            class_name = 'Page_Type_'
+            self.paging = dicts_to_namedrecords(self._paging, class_name)
+
+    def to_pandas(self):
+        """
+        Converts response data into pandas dataframe very naively.
+        It fetches all the pages before proceeding.
+        """
+        from pandas import DataFrame
+        if self._paging and 'next' in self._paging[len(self._paging)-1].keys():
+            self.load_all()
+        if self.data:
+            self.data = DataFrame(self._data)
+        if self.paging:
+            self.paging = DataFrame(self._paging)
+
     def load_all(self):
-        if not self.paging:
+        """
+        Get all the pages for the response. This cannot be done after values
+        have been converted to to_namedrecords
+        """
+        if not self._paging:
             return
-        while 'next' in self.paging[len(self.paging)-1].keys():
+        while 'next' in self._paging[len(self._paging)-1].keys():
             try:
-                temp  = r.get(self.paging[len(self.paging)-1]['next']).json()
+                temp  = r.get(self._paging[len(self._paging)-1]['next']).json()
             except r.ConnectionError as err:
                 print '%s' % err
                 print "Check your connection mate"
                 raise AdsAPIError
-            self.data += temp['data']
-            self.paging.append(temp['paging'])
+            self._data += temp['data']
+            self._paging.append(temp['paging'])
+            self.data = self._data
+            self.paging = self._paging
 
 # <codecell>
 
@@ -223,6 +281,11 @@ class AdsAPI(object):
             'access_token': '%s|%s' % (self.app_id, self.app_secret)
         }
         return self.make_request(path, 'GET', args)
+
+    def get_events_by_app(self, app_id, batch=False):
+        """Returns the events associated with an app"""
+        path = "{}/app_event_types".format(app_id)
+        return self.make_request(path, 'GET', batch=batch)
 
     def get_adusers(self, account_id, batch=False):
         """Returns the users of the given ad account."""
